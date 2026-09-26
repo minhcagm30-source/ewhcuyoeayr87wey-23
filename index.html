@@ -316,6 +316,9 @@ function rankAtLeast(u, min) {
 }
 function canForum(u) { return u && u.id && rankAtLeast(u,"D"); }
 function canChat(u) { return u && u.id && rankAtLeast(u,"D"); }
+/** Admin web: đăng Drive + quản trị key. O / O2. */
+function canPublishDrive(u) { return u && u.id && ["O","O2"].includes(getUserRank(u)); }
+function canAdminWeb(u) { return canPublishDrive(u); }
 function formatViews(n) {
   n = +n||0;
   if (n<1000) return String(n);
@@ -474,12 +477,24 @@ function buildNav() {
     home: ui("nav_home"), search: ui("nav_search"), collections: ui("nav_collections"),
     genres: ui("nav_genres"), forum: ui("nav_forum"), chat: ui("nav_chat"),
     account: ui("nav_account"),
+    publish_drive: "☁ Đăng Drive",
+    admin: "Quản trị",
   };
-  order.forEach(k => {
+  // Admin: chèn Đăng Drive + Quản trị trước Tài khoản
+  let keys = order.filter(k => k !== "publish_drive" && k !== "admin");
+  if (canAdminWeb(state.user)) {
+    const ai = keys.indexOf("account");
+    const insert = ["publish_drive", "admin"];
+    if (ai >= 0) keys.splice(ai, 0, ...insert);
+    else keys.push(...insert);
+  }
+  keys.forEach(k => {
     if (!labels[k]) return;
     if (k === "forum" && state.user && !canForum(state.user) && !state.user.id) return;
     if (k === "chat" && (!state.user || !canChat(state.user))) return;
     if ((k === "forum" || k === "chat") && !state.user) return;
+    if (k === "publish_drive" && !canPublishDrive(state.user)) return;
+    if (k === "admin" && !canAdminWeb(state.user)) return;
     const b = document.createElement("button");
     b.className = "nav-btn" + (state.page === k ? " active" : "");
     b.textContent = labels[k];
@@ -507,6 +522,8 @@ function renderPage() {
   if (state.page === "genres") return renderGenres(el);
   if (state.page === "forum") return renderForum(el);
   if (state.page === "chat") return renderChat(el);
+  if (state.page === "publish_drive") return renderPublishDrive(el);
+  if (state.page === "admin") return renderAdminWeb(el);
   if (state.page === "account") return renderAccount(el);
   renderHome(el);
 }
@@ -768,6 +785,157 @@ function renderChat(el) {
   };
 }
 
+function renderAdminWeb(el) {
+  if (!canAdminWeb(state.user)) {
+    el.innerHTML = `<div class="page"><div class="empty">Không có quyền quản trị</div></div>`;
+    return;
+  }
+  const rank = getUserRank(state.user);
+  const keys = LS.get("keys", []);
+  el.innerHTML = `
+    <div class="page">
+      <h2>Quản trị <span class="rank-badge ${rank}">${rank==="O2"?"O₂":rank}</span></h2>
+      <p class="tip" style="margin-bottom:16px">Web: tạo / thu hồi Invite Key · Đăng truyện bằng Drive (tab ☁ Đăng Drive). Viết nội dung tay & xuất ebook: dùng app EXE.</p>
+      <div class="form-card" style="max-width:100%;margin:0">
+        <h3 style="font-size:14px;margin-bottom:10px">🔑 Invite Keys</h3>
+        <div class="field"><label>Ghi chú (optional)</label><input id="key-note" placeholder="vd: key cho user X" /></div>
+        <button class="btn btn-primary" id="btn-gen-key">Tạo key mới</button>
+        <div style="margin-top:14px;max-height:320px;overflow:auto">
+          <table style="width:100%;border-collapse:collapse;font-size:13px">
+            <tr style="color:var(--muted)"><th style="text-align:left;padding:8px;border-bottom:1px solid var(--border)">Key</th>
+              <th style="text-align:left;padding:8px;border-bottom:1px solid var(--border)">Used</th>
+              <th style="padding:8px;border-bottom:1px solid var(--border)"></th></tr>
+            ${keys.map(k => `<tr>
+              <td style="padding:8px;border-bottom:1px solid var(--border);font-family:monospace;font-size:11px">${k.revoked?"(revoked) ":""}${esc(k.plain)}${k.note?`<div style="color:var(--muted);font-size:11px">${esc(k.note)}</div>`:""}</td>
+              <td style="padding:8px;border-bottom:1px solid var(--border)">${esc(k.used_by||"—")}</td>
+              <td style="padding:8px;border-bottom:1px solid var(--border)">${!k.revoked?`<button class="btn btn-danger" data-rev="${k.id}" style="font-size:11px;padding:2px 8px">Thu hồi</button>`:""}</td>
+            </tr>`).join("") || `<tr><td colspan="3" class="empty">Chưa có key</td></tr>`}
+          </table>
+        </div>
+      </div>
+    </div>`;
+  el.querySelector("#btn-gen-key").onclick = () => {
+    const note = el.querySelector("#key-note")?.value || "";
+    const alphabet = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
+    const parts = () => Array.from({length:4}, () => alphabet[Math.floor(Math.random()*alphabet.length)]).join("");
+    const plain = "EMAF-"+parts()+"-"+parts()+"-"+parts();
+    const keys = LS.get("keys", []);
+    keys.unshift({ id: Date.now(), plain, note, used_by: null, revoked: false, created: Date.now() });
+    LS.set("keys", keys);
+    try { navigator.clipboard.writeText(plain); } catch (_) {}
+    alert("Key mới (đã copy clipboard nếu được):\n"+plain);
+    renderAdminWeb(document.getElementById("app"));
+  };
+  el.querySelectorAll("[data-rev]").forEach(b => {
+    b.onclick = () => {
+      const keys = LS.get("keys", []);
+      const k = keys.find(x => x.id === +b.dataset.rev);
+      if (k) k.revoked = true;
+      LS.set("keys", keys);
+      renderAdminWeb(document.getElementById("app"));
+    };
+  });
+}
+
+function renderPublishDrive(el) {
+  if (!canPublishDrive(state.user)) {
+    el.innerHTML = `<div class="page"><div class="empty">Chỉ Admin (O / O₂) được đăng bằng link Drive trên web.</div></div>`;
+    return;
+  }
+  const mine = LS.get("stories",[]).filter(s => s.author_id === state.user.id || s.author === state.user.display_name);
+  el.innerHTML = `
+    <div class="page">
+      <h2>☁ Đăng truyện bằng link Drive</h2>
+      <p class="tip" style="margin-bottom:14px">
+        Không viết nội dung trên web. Dán link Google Drive <b>Anyone with the link → Viewer</b>
+        (file .txt / .epub). Giống app: lưu <code>drive_file_id</code> + mục lục nếu tải được.
+      </p>
+      <div class="form-card" style="max-width:100%;margin:0 0 20px">
+        <div class="field"><label>Link Google Drive (hoặc File ID)</label>
+          <input id="pd-link" placeholder="https://drive.google.com/file/d/..../view" /></div>
+        <div class="field"><label>Tiêu đề (để trống = lấy từ file nếu tách được)</label>
+          <input id="pd-title" placeholder="Tên truyện" /></div>
+        <div class="field"><label>Thể loại</label>
+          <select id="pd-genre">${DEMO_GENRES.map(g=>`<option>${esc(g)}</option>`).join("")}</select></div>
+        <div class="field"><label>Tác giả hiển thị</label>
+          <input id="pd-author" value="${esc(state.user.display_name||state.user.email)}" /></div>
+        <div class="toolbar">
+          <button class="btn btn-primary" id="btn-pd-pub">Đăng tải</button>
+          <button class="btn" id="btn-pd-preview">Thử tải / xem trước mục lục</button>
+        </div>
+        <p class="msg" id="pd-msg"></p>
+        <pre id="pd-preview" class="reader-body" style="display:none;max-height:200px;font-size:12px"></pre>
+      </div>
+      <h3 style="margin:12px 0 10px">Truyện đã gắn (của bạn trên web này)</h3>
+      <div class="cards" id="pd-mine">${mine.length?mine.map(storyCard).join(""):`<div class="empty">Chưa có</div>`}</div>
+    </div>`;
+  bindStoryCards(el.querySelector("#pd-mine"));
+  const msg = el.querySelector("#pd-msg");
+  const prev = el.querySelector("#pd-preview");
+
+  el.querySelector("#btn-pd-preview").onclick = async () => {
+    const link = el.querySelector("#pd-link").value.trim();
+    const fid = extractDriveFileId(link);
+    if (!fid) { msg.className="msg err"; msg.textContent="Link/ID Drive không hợp lệ."; return; }
+    msg.className="msg"; msg.textContent="Đang thử tải (có thể bị CORS)…";
+    prev.style.display="block";
+    try {
+      const text = await tryFetchDriveText(fid);
+      const chs = parseChaptersFromText(text);
+      prev.textContent = chs.length
+        ? ("Tách được "+chs.length+" chương:\n"+chs.slice(0,15).map(c=>c.n+". "+c.t).join("\n")+(chs.length>15?"\n…":""))
+        : text.slice(0,1500);
+      msg.className="msg ok"; msg.textContent="Tải OK — có thể bấm Đăng tải.";
+      el._pdCache = { fid, text, chs };
+    } catch (e) {
+      el._pdCache = { fid, text:"", chs:[] };
+      prev.textContent = "Không tải trong trình duyệt (CORS). Vẫn có thể Đăng tải — chỉ lưu link Drive; độc giả bấm «Mở trên Drive».";
+      msg.className="msg err"; msg.textContent=(e&&e.message)||String(e);
+    }
+  };
+
+  el.querySelector("#btn-pd-pub").onclick = async () => {
+    const link = el.querySelector("#pd-link").value.trim();
+    const fid = extractDriveFileId(link);
+    if (!fid) { msg.className="msg err"; msg.textContent="Cần link Drive hợp lệ."; return; }
+    let title = el.querySelector("#pd-title").value.trim();
+    const genre = el.querySelector("#pd-genre").value;
+    const author = el.querySelector("#pd-author").value.trim() || state.user.display_name || state.user.email;
+    let chs = (el._pdCache && el._pdCache.fid===fid) ? el._pdCache.chs : [];
+    if (!chs.length) {
+      try {
+        msg.textContent="Đang tải để tách chương…";
+        const text = await tryFetchDriveText(fid);
+        chs = parseChaptersFromText(text);
+        el._pdCache = { fid, text, chs };
+      } catch (_) {
+        chs = [{ n:1, t:"Chương 1 (Drive)", body:"", drive:true }];
+      }
+    }
+    if (!title) title = (chs[0] && chs[0].t && chs.length===1) ? "Truyện Drive "+fid.slice(0,8) : ("Truyện Drive "+fid.slice(0,8));
+    const stories = LS.get("stories", DEMO_STORIES);
+    const id = stories.length ? Math.max(...stories.map(s=>s.id))+1 : 1;
+    const chapters = chs.map(c => ({
+      n: c.n, t: c.t,
+      body: (c.body||"").slice(0, 200000),
+      drive: !(c.body||"").trim(),
+    }));
+    stories.push({
+      id, title, genre, author, author_id: state.user.id,
+      views:0, monthly:0, exclusive:false, potential:false, status:"published",
+      drive_file_id: fid,
+      chapters: chapters.length ? chapters : [{ n:1, t:"Chương 1", body:"", drive:true }],
+    });
+    LS.set("stories", stories);
+    msg.className="msg ok";
+    msg.textContent="Đã đăng #"+id+" — "+title+" (Drive "+fid+")";
+    el.querySelector("#pd-link").value="";
+    el.querySelector("#pd-title").value="";
+    el._pdCache=null;
+    renderPublishDrive(document.getElementById("app"));
+  };
+}
+
 function renderAccount(el) {
   if (!state.user) { goto("login"); return; }
   const u = state.user;
@@ -786,7 +954,7 @@ function renderAccount(el) {
           <button class="btn btn-primary" id="btn-save-acc">Lưu</button>
           <button class="btn btn-danger" id="btn-logout">Đăng xuất</button>
         </div>
-        <p class="tip" style="margin-top:12px">Viết / đăng truyện / xuất ebook: dùng <b>app HIMETO CHAN</b> (EXE).</p>
+        <p class="tip" style="margin-top:12px">Viết nội dung tay & xuất ebook: dùng <b>app EXE</b>. Admin (O/O₂) có thể <b>Đăng Drive</b> trên web (chỉ dán link).</p>
       </div>
     </div>`;
   el.querySelector("#btn-save-acc").onclick = () => {
