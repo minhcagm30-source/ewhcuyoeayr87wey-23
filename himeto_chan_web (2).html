@@ -1,0 +1,938 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1" />
+<title>HIMETO CHAN</title>
+<style>
+  :root {
+    --bg: #FFF5F8; --panel: #FFE8F0; --card: #FFFFFF; --card-hover: #FFF0F5;
+    --border: #F5C6D6; --text: #4A2C3A; --muted: #9B6B7D;
+    --accent: #E891B0; --accent2: #F0A8C0; --dark-accent: #D9789C;
+    --header-bg: #FFE4EE; --header-bg2: #FFD6E7;
+    --hero-bg: #FFE4EE; --hero-bg-end: #FFF0F5; --hero-text: #4A2C3A; --hero-sub: #9B6B7D;
+    --input-bg: #FFFFFF; --danger: #D6455D; --success: #4CAF6E;
+    --section-bar: #E891B0; --radius: 14px; --shadow: 0 4px 20px rgba(232,145,176,.12);
+  }
+  [data-theme="dark"] {
+    --bg: #17131C; --panel: #221B2A; --card: #2A2235; --card-hover: #33283D;
+    --border: #5A4A6A; --text: #FFFFFF; --muted: #D4CBE0;
+    --accent: #E85F75; --accent2: #D6455D; --dark-accent: #F08A7E;
+    --header-bg: #1A1520; --header-bg2: #2D2338;
+    --hero-bg: #141018; --hero-bg-end: #1A0A14; --hero-text: #FFFFFF; --hero-sub: #F0C8D0;
+    --input-bg: #1D1724; --danger: #E85F75; --success: #5CD67A;
+    --section-bar: #E85F75; --shadow: 0 4px 24px rgba(0,0,0,.35);
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: "Segoe UI", system-ui, -apple-system, sans-serif;
+    background: var(--bg); color: var(--text);
+    min-height: 100vh; line-height: 1.45;
+  }
+  button, input, select, textarea { font: inherit; color: inherit; }
+  a { color: var(--accent); text-decoration: none; }
+  .hidden { display: none !important; }
+  #header {
+    position: sticky; top: 0; z-index: 100;
+    background: linear-gradient(90deg, var(--header-bg), var(--header-bg2));
+    border-bottom: 1px solid var(--border);
+    padding: 8px 16px; display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
+  }
+  .logo-box {
+    width: 40px; height: 40px; border-radius: 10px; background: var(--accent);
+    display: flex; align-items: center; justify-content: center; font-size: 20px;
+    cursor: pointer; flex-shrink: 0;
+  }
+  .brand { font-weight: 700; font-size: 15px; cursor: pointer; white-space: nowrap; }
+  .nav { display: flex; gap: 4px; flex-wrap: wrap; flex: 1; }
+  .nav-btn {
+    background: transparent; border: none; color: var(--text);
+    padding: 7px 12px; border-radius: 10px; cursor: pointer; font-size: 13px; font-weight: 500;
+  }
+  .nav-btn:hover { background: color-mix(in srgb, var(--accent) 18%, transparent); }
+  .nav-btn.active { background: var(--accent); color: #fff; font-weight: 600; }
+  .header-right { display: flex; align-items: center; gap: 8px; margin-left: auto; }
+  .chip {
+    display: flex; align-items: center; gap: 6px; padding: 4px 10px;
+    background: var(--panel); border: 1px solid var(--border); border-radius: 20px;
+  }
+  .av {
+    width: 28px; height: 28px; border-radius: 50%; background: var(--panel);
+    border: 2px solid var(--accent); display: flex; align-items: center; justify-content: center;
+    font-size: 13px;
+  }
+  .rank-badge {
+    font-size: 11px; font-weight: 800; padding: 2px 7px; border-radius: 6px;
+    background: var(--accent); color: #fff;
+  }
+  .rank-badge.O { background: linear-gradient(135deg,#FFD700,#FF8C00); color:#1a1a1a; }
+  .rank-badge.O2 { background: linear-gradient(135deg,#C0C0C0,#8B8B8B); color:#111; }
+  .rank-badge.A { background: #7C4DFF; }
+  .rank-badge.B { background: #2196F3; }
+  .rank-badge.C { background: #4CAF50; }
+  .rank-badge.D { background: #78909C; }
+  .rank-badge.E { background: #9E9E9E; }
+  .btn {
+    background: var(--panel); color: var(--text); border: 1px solid var(--border);
+    border-radius: 10px; padding: 6px 14px; cursor: pointer; font-size: 12px;
+  }
+  .btn:hover { border-color: var(--accent); color: var(--accent); }
+  .btn-primary {
+    background: linear-gradient(135deg, var(--accent), var(--accent2));
+    color: #fff; border: none; font-weight: 600;
+  }
+  .btn-primary:hover { filter: brightness(1.08); color: #fff; }
+  .btn-danger { background: color-mix(in srgb, var(--danger) 15%, var(--panel)); color: var(--danger); border-color: var(--danger); }
+  #app { min-height: calc(100vh - 56px); }
+  .page { padding: 20px 16px 40px; max-width: 1100px; margin: 0 auto; }
+  .hero {
+    background: linear-gradient(135deg, var(--hero-bg), var(--hero-bg-end));
+    border-radius: 20px; padding: 28px 24px; margin-bottom: 24px;
+    border: 1px solid var(--border);
+  }
+  .hero-badge { color: var(--accent); font-weight: 600; font-size: 13px; margin-bottom: 8px; }
+  .hero h1 { font-size: 26px; color: var(--hero-text); white-space: pre-line; margin-bottom: 8px; }
+  .hero p { color: var(--hero-sub); font-size: 14px; margin-bottom: 16px; }
+  .section { margin-bottom: 28px; }
+  .section-title {
+    font-size: 15px; font-weight: 700; margin-bottom: 12px;
+    display: flex; align-items: center; gap: 8px;
+  }
+  .section-title::before {
+    content: ""; width: 4px; height: 18px; background: var(--section-bar); border-radius: 2px;
+  }
+  .cards { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 12px; }
+  .card {
+    background: var(--card); border: 1px solid var(--border); border-radius: var(--radius);
+    overflow: hidden; cursor: pointer; transition: .15s; box-shadow: var(--shadow);
+  }
+  .card:hover { background: var(--card-hover); transform: translateY(-2px); border-color: var(--accent); }
+  .card-cover {
+    aspect-ratio: 3/4; background: linear-gradient(160deg, var(--panel), var(--accent2));
+    display: flex; align-items: center; justify-content: center; font-size: 36px; color: #fff;
+    position: relative;
+  }
+  .badge-ex {
+    position: absolute; top: 6px; left: 6px; background: var(--accent); color: #fff;
+    font-size: 10px; font-weight: 700; padding: 2px 6px; border-radius: 6px;
+  }
+  .badge-drive {
+    position: absolute; top: 6px; right: 6px; background: #4285F4; color: #fff;
+    font-size: 10px; font-weight: 700; padding: 2px 6px; border-radius: 6px;
+  }
+  .card-body { padding: 8px 10px 10px; }
+  .card-title { font-size: 12px; font-weight: 600; line-height: 1.3; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+  .card-meta { font-size: 11px; color: var(--muted); margin-top: 4px; }
+  .form-card {
+    background: var(--card); border: 1px solid var(--border); border-radius: 16px;
+    padding: 24px; max-width: 420px; margin: 40px auto; box-shadow: var(--shadow);
+  }
+  .form-card h2 { text-align: center; margin-bottom: 6px; font-size: 20px; }
+  .form-card .sub { text-align: center; color: var(--muted); font-size: 13px; margin-bottom: 20px; }
+  .field { margin-bottom: 14px; }
+  .field label { display: block; font-size: 12px; font-weight: 600; margin-bottom: 5px; color: var(--muted); }
+  .field input, .field select, .field textarea {
+    width: 100%; padding: 10px 12px; border-radius: 10px; border: 1px solid var(--border);
+    background: var(--input-bg); outline: none;
+  }
+  .field input:focus, .field textarea:focus { border-color: var(--accent); }
+  .field textarea { min-height: 100px; resize: vertical; }
+  .tabs { display: flex; gap: 6px; margin-bottom: 16px; }
+  .tab {
+    flex: 1; text-align: center; padding: 8px; border-radius: 10px; cursor: pointer;
+    background: var(--panel); border: 1px solid var(--border); font-size: 13px; font-weight: 600;
+  }
+  .tab.active { background: var(--accent); color: #fff; border-color: var(--accent); }
+  .msg { font-size: 13px; margin-top: 10px; text-align: center; }
+  .msg.err { color: var(--danger); }
+  .msg.ok { color: var(--success); }
+  #splash {
+    min-height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center;
+    background: linear-gradient(160deg, var(--hero-bg), var(--bg)); text-align: center; padding: 24px;
+  }
+  #splash .big { font-size: 48px; margin-bottom: 8px; }
+  #splash h1 { font-size: 28px; margin-bottom: 6px; }
+  #splash p { color: var(--muted); margin-bottom: 24px; }
+  .modal-bg {
+    position: fixed; inset: 0; background: rgba(0,0,0,.55); z-index: 200;
+    display: flex; align-items: center; justify-content: center; padding: 16px;
+  }
+  .modal {
+    background: var(--card); border-radius: 18px; border: 1px solid var(--border);
+    max-width: 720px; width: 100%; max-height: 90vh; overflow: auto; padding: 20px;
+    box-shadow: 0 12px 40px rgba(0,0,0,.3);
+  }
+  .modal h2 { margin-bottom: 8px; }
+  .modal .meta { color: var(--muted); font-size: 13px; margin-bottom: 12px; }
+  .chapter-list { list-style: none; margin-top: 12px; }
+  .chapter-list li {
+    padding: 10px 12px; border-radius: 10px; border: 1px solid var(--border);
+    margin-bottom: 6px; cursor: pointer; display: flex; justify-content: space-between; gap: 8px; align-items: center;
+  }
+  .chapter-list li:hover { background: var(--card-hover); border-color: var(--accent); }
+  .post, .msg-bubble {
+    background: var(--card); border: 1px solid var(--border); border-radius: 12px;
+    padding: 12px 14px; margin-bottom: 10px;
+  }
+  .post .author { font-weight: 700; font-size: 13px; }
+  .post .time, .msg-bubble .time { font-size: 11px; color: var(--muted); }
+  .chat-box { max-height: 360px; overflow-y: auto; margin-bottom: 12px; }
+  .msg-bubble.me { background: color-mix(in srgb, var(--accent) 20%, var(--card)); margin-left: 20%; }
+  .msg-bubble.them { margin-right: 20%; }
+  .empty { color: var(--muted); font-size: 13px; padding: 20px; text-align: center; }
+  .toolbar { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 14px; align-items: center; }
+  .search-bar { display: flex; gap: 8px; margin-bottom: 16px; }
+  .search-bar input { flex: 1; padding: 10px 14px; border-radius: 12px; border: 1px solid var(--border); background: var(--input-bg); }
+  .reader-body {
+    margin-top: 12px; padding: 14px; background: var(--panel); border-radius: 12px;
+    white-space: pre-wrap; font-size: 15px; line-height: 1.65; max-height: 50vh; overflow: auto;
+  }
+  .tip { font-size: 12px; color: var(--muted); margin-top: 8px; }
+  @media (max-width: 600px) {
+    .hero h1 { font-size: 22px; }
+    .cards { grid-template-columns: repeat(auto-fill, minmax(110px, 1fr)); }
+    .nav-btn { padding: 6px 8px; font-size: 12px; }
+  }
+</style>
+</head>
+<body data-theme="dark">
+
+<div id="splash">
+  <div class="big">🌸</div>
+  <h1>HIMETO CHAN</h1>
+  <p>Thư viện truyện · Chỉ đọc · Pastel Pink</p>
+  <button class="btn btn-primary" id="btn-enter-splash" style="padding:12px 28px;font-size:15px">Vào thư viện →</button>
+</div>
+
+<div id="main" class="hidden">
+  <header id="header">
+    <div class="logo-box" id="logo-btn" title="Về trang chủ">🌸</div>
+    <div class="brand" id="brand-btn">HIMETO CHAN</div>
+    <nav class="nav" id="nav"></nav>
+    <div class="header-right">
+      <button class="btn" id="btn-theme" title="Đổi theme">☀️ Sáng</button>
+      <div class="chip" id="user-chip">
+        <div class="av" id="header-av">👤</div>
+        <span id="who">Khách</span>
+        <span class="rank-badge E" id="rank-badge">E</span>
+      </div>
+    </div>
+  </header>
+  <div id="app"></div>
+</div>
+
+<div id="modal-bg" class="modal-bg hidden">
+  <div class="modal" id="modal-body"></div>
+</div>
+
+<script>
+/* HIMETO CHAN — Web READER
+   - Không viết / không xuất ebook / không SMTP admin nặng
+   - Hiển thị truyện + chương; nội dung local hoặc link Drive (logic file ID giống app)
+   - Viết truyện chỉ trên App EXE; web nhận metadata + drive_file_id sau khi đăng
+*/
+
+const RANK_ORDER = { O:6, O2:5, A:4, B:3, C:2, D:1, E:0 };
+
+const DEFAULT_UI = {
+  nav_home:"Trang chủ", nav_search:"Tìm kiếm", nav_collections:"Bộ sưu tập",
+  nav_genres:"Thể loại", nav_forum:"Diễn đàn", nav_chat:"Chat",
+  nav_account:"Tài khoản",
+  nav_order:["home","search","collections","genres","forum","chat","account"],
+  hero_badge:"♥  HIMETO CHAN",
+  hero_title:"Tích cực quay tay vận may sẽ đến",
+  hero_sub:"Đọc truyện đã đăng từ app · Nội dung nặng mở qua Drive.",
+  hero_btn_explore:"Khám phá ngay →",
+  sec_top_views:"🔥 Top nhiều view nhất",
+  sec_monthly:"📅 Hot nhất tháng",
+  sec_exclusive:"★ Tác phẩm độc quyền",
+  sec_discover:"✨ Khám phá tác phẩm mới",
+  sec_potential:"🌟 Tác phẩm tiềm năng",
+  sec_featured:"✨ Đề xuất tuần này",
+  empty_section:"Chưa có dữ liệu",
+};
+
+const DEMO_STORIES = [
+{id:1,title:"Chuyển Sinh Thành Phù Thủy",author:"Nguyên Thủy Lọ Tôn",author_id:1,genre:"Biến Bách",views:100005,monthly:100005,exclusive:true,potential:false,status:"published",drive_file_id:"14el4lKZj164m_SEVP6ZSueXMqJDQqDwp",chapters:[{n:1,t:"Chương 1",body:"",drive:true}]},
+{id:2,title:"Đệ nhất lọ vương",author:"Nguyên Thủy Lọ Tôn",author_id:1,genre:"Biến Bách",views:999999999,monthly:999999999,exclusive:false,potential:false,status:"published",drive_file_id:"1JHHmH4mjBF4VQOPQPzhdKkvf2vam2i3A",chapters:[{n:1,t:"Chương 1",body:"",drive:true}]},
+{id:3,title:"lọ đế",author:"Nguyên Thủy Lọ Tôn",author_id:1,genre:"Biến Bách",views:6,monthly:6,exclusive:false,potential:true,status:"published",drive_file_id:"1JHHmH4mjBF4VQOPQPzhdKkvf2vam2i3A",chapters:[{n:1,t:"1. Hehe, trở lại sau cuộc thi hồi sinh!",body:"",drive:true},{n:2,t:"2. Charlotte, phù thủy mạnh nhất",body:"",drive:true},{n:3,t:"3. Tôi đã trở lại",body:"",drive:true},{n:4,t:"4. Tại sao em không vui vì anh đang bay nè!",body:"",drive:true},{n:5,t:"5. Anh có hai ngày sinh nhật khác nhau có kỳ lạ không?",body:"",drive:true},{n:6,t:"6. Cái này, không cần nữa.",body:"",drive:true},{n:7,t:"7. Gặp tai nạn xe có vui không?",body:"",drive:true},{n:8,t:"8. Chuyển sinh thành con gái có buồn cười không?",body:"",drive:true},{n:9,t:"9. Thật buồn cười khi không dùng được phép thuật sao?",body:"",drive:true},{n:10,t:"10. Bị sư phụ đánh!",body:"",drive:true},{n:11,t:"11. Sư phụ của sư phụ là mẹ?",body:"",drive:true},{n:12,t:"12. Đau đến mức không ngủ được thì buồn cười lắm sao?",body:"",drive:true},{n:13,t:"13. Không thể quay lại dị giới, buồn cười lắm sao?",body:"",drive:true},{n:14,t:"14. Đàn em sắp hắc hóa rồi",body:"",drive:true},{n:15,t:"15. Tối nay ngủ cùng anh nhé",body:"",drive:true},{n:16,t:"16. Cái gì gọi là không thể để bạn dùng hết sức mình thì tôi rất xin lỗi?",body:"",drive:true},{n:17,t:"17. Ám thương, xung phong!",body:"",drive:true},{n:18,t:"18. Như mọi người đều biết, bất bại chính là một debuff tiêu cực.",body:"",drive:true},{n:19,t:"19. Bị bắt quả tang bỏ thuốc?",body:"",drive:true},{n:20,t:"20. Đoán được ai là người tạo ra thói quen đó của anh rồi!",body:"",drive:true},{n:21,t:"21. Muốn chạy mà chạy không được!",body:"",drive:true},{n:22,t:"22. Sư phụ Chloe bị nắm thóp!",body:"",drive:true},{n:23,t:"23. Đặt tên cho bù nhìn rơm nhỏ là Star Fury!",body:"",drive:true},{n:24,t:"24. Uống cháo nấm bị ngộ độc!",body:"",drive:true},{n:25,t:"25. Tiêu diệt bù nhìn rơm nổi loạn!",body:"",drive:true},{n:26,t:"26. Phép thuật thật kỳ diệu phải không!",body:"",drive:true},{n:27,t:"27. Không được dùng ma thuật nữa!",body:"",drive:true},{n:28,t:"28. May mà còn giữ một chiêu!",body:"",drive:true},{n:29,t:"29. Tôi là em gái của em gái tôi?",body:"",drive:true},{n:30,t:"30. Tôi đánh anh trai ư? Có thật không vậy?",body:"",drive:true},{n:31,t:"31. Đùa đi, anh trai em siêu dũng cảm mà!",body:"",drive:true},{n:32,t:"32. Anh trai đến tuổi rất phiền phức!",body:"",drive:true},{n:33,t:"33. Không tìm thấy sư phụ?",body:"",drive:true},{n:34,t:"34. Bị bọn côn đồ chặn đường!",body:"",drive:true},{n:35,t:"35. Vẫn chưa tìm được sư phụ?",body:"",drive:true},{n:36,t:"36. Ca khúc cuối phim Hoa Chi Tháp!",body:"",drive:true},{n:37,t:"37. Bị mẹ bắt lại bằng tốc độ ánh sáng?",body:"",drive:true},{n:38,t:"38. Có thể dừng lại ở đây đều là những người thân!",body:"",drive:true},{n:39,t:"39. Sao người bị tra tấn lại đột nhiên thành tôi rồi?",body:"",drive:true},{n:40,t:"40. Ma thuật đâu phải là vạn năng",body:"",drive:true},{n:41,t:"41. Bị mẹ xóa kí ức!",body:"",drive:true},{n:42,t:"42. Chị học trưởng bị đóng băng!",body:"",drive:true},{n:43,t:"43. Chạy còn không nhanh bằng em gái!",body:"",drive:true},{n:44,t:"44. Bị con gấu lớn dùng búa ma thuật đánh?",body:"",drive:true},{n:45,t:"45. Gấu đen bị nữ hầu gái đánh bại!",body:"",drive:true},{n:46,t:"46. Bị nữ hầu gái dùng ma thuật đánh?",body:"",drive:true},{n:47,t:"47. Cuối cùng cũng hòa giải với mẹ!",body:"",drive:true},{n:48,t:"48. Bị mẹ dùng phép thuật đánh cho một trận!",body:"",drive:true},{n:49,t:"49. Sư phụ bỏ mình mà chạy trốn!",body:"",drive:true},{n:50,t:"50. Trong mắt anh chẳng phải vẫn còn em sao!",body:"",drive:true},{n:51,t:"51. Vẫn cứ gọi đồ ăn ngoài đi!",body:"",drive:true},{n:52,t:"52. Bị chặn lại khi vượt chốt kiểm tra?",body:"",drive:true},{n:53,t:"53. Bị công chúa tóc xanh để ý!",body:"",drive:true},{n:54,t:"54. Suýt nữa thì ngã chết!",body:"",drive:true},{n:55,t:"55. Quả cầu pha lê để đo ma thuật bị vỡ!",body:"",drive:true},{n:56,t:"56. Tên bị xếp cuối cùng thì nói nên điều gì?",body:"",drive:true},{n:57,t:"57. Chỉ thiếu một điểm là có thể đứng đầu!",body:"",drive:true},{n:58,t:"58. Búp bê ma pháp mất kiểm soát!",body:"",drive:true},{n:59,t:"59. Đại cao thủ giả vờ làm tân binh!",body:"",drive:true}]},
+{id:4,title:"Tôi chỉ đang tận hưởng hạnh phúc trong cuộc đời",author:"Nguyên Thủy Lọ Tôn",author_id:1,genre:"Biến Đơn",views:110000005,monthly:110000005,exclusive:false,potential:false,status:"published",drive_file_id:"1uU3eVrtXoG0xRfqn_-b-zaqdwBzxYL3S",chapters:[{n:1,t:"Chương 1",body:"Đêm mà tôi kiểm tra thư trúng tuyển từ Đại học Hàn Quốc danh giá, nổi tiếng cả trong nước lẫn quốc tế.\n\nCảm giác có gì đó rất lạ vào đêm ấy.\n\n‘Mình đang ở đâu thế này?’\n\nKhung cảnh hoàn toàn khác biệt so với căn phòng bệnh viện mà tôi đã gắn bó suốt cả cuộc đời.\n\nTôi nhìn thấy một chiếc đèn chùm vàng và những bức tường lát đá cẩm thạch màu ngà.\n\nMùi hương hoa thoang thoảng hoàn toàn khác với mùi bệnh viện mà tôi đã quen thuộc.\n\n‘Các bác sĩ đâu rồi? Các y tá đâu?’   \n\nguufigoiynib98\n\nXin lỗi?\n\nTôi cố lên tiếng, nhưng…\n\n“Òa òa!”\n\nTiếng khóc bật ra.\n\n‘Gì đây, chuyện quái gì thế này? Đây là trò đùa à?’\n\nTôi chớp mắt.\n\nCơ thể tôi không thể cử động như ý muốn.\n\nRên rỉ, rên rỉ.\n\nTôi cố gắng nâng tay lên. Nhưng cánh tay của tôi rất ngắn.\n\n“Òa òa!”\n\nGiọng nói của tôi cứ bật ra không theo ý mình, và tôi chỉ vừa kịp quay đầu để nhìn cánh tay ngắn, mũm mĩm của mình.\n\nNó trông giống như một chiếc xúc xích nhỏ bé.\n\nMột giọng nói vang lên.\n\n“Là một bé gái!”\n\nTôi khá sốc.\n\nNgôn ngữ đó không phải tiếng Hàn.\n\nNhưng tôi tự động hiểu nó như thể đó là ngôn ngữ mẹ đẻ của mình.\n\n“Công chúa đã chào đời!”\n\nWow, tôi nghĩ mình đã chuyển sinh sang một thế giới khác.\n\n‘Hoặc có thể mình đã nhập hồn?’\n\nTôi lắng nghe lời của bà đỡ.\n\nNhưng sau đó, tôi nghe thấy tiếng ai đó khóc nức nở.\n\n“Một bé gái được sinh ra trong Hoàng gia Bilotian…”\n\nTôi không chắc lắm, nhưng dường như mẹ tôi - người đã sinh ra tôi - đang khóc.\n\nBà không hề tỏ vẻ vui mừng khi sinh ra tôi.\n\nNhưng tôi thì khá vui vẻ.\n\n‘Ồ! Bilotian! Mình biết cái này.’\n\nBilotian là tên của hoàng gia trong cuốn tiểu thuyết ‘Sau Cái Chết của Ác Nữ’.\n\nGia tộc này có một truyền thống đặc biệt là chỉ coi trọng sức mạnh, tin rằng chỉ có quyền lực mới chứng minh được giá trị của một con người.\n\nĐây là một dòng máu tàn nhẫn, xem con cái không phải là những đứa trẻ mà là những người kế thừa tiềm năng, và suốt 500 năm qua chỉ sinh ra con trai.\n\n‘Đây là nơi Công chúa Isabel được sinh ra. Vậy, chắc đó là mình?’\n\nKiếm pháp của gia tộc Bilotian được thiết kế và phát triển phù hợp với mạch ma thuật của đàn ông.\n\nNói cách khác, phụ nữ không thể học kiếm pháp Bilotian.\n\nSinh ra là một bé gái trong gia tộc Bilotian, nơi coi trọng sức mạnh hơn hết, là một lời nguyền.\n\n‘Một bà đỡ đang hoang mang, một người mẹ khóc nức nở. Gia đình Hoàng gia Bilotian. Công chúa đầu tiên được sinh ra sau 500 năm. Tên của mình là Isabel?’\n\nKhông còn nghi ngờ gì nữa, tôi đã tỉnh dậy trong cuốn tiểu thuyết ‘Sau Cái Chết của Ác Nữ’.\n\nTôi đã đọc nó hơn 17 lần.\n\nTôi gần như biết hết tất cả các nhân vật và đã thuộc lòng bối cảnh cũng như cốt truyện.\n\nTôi đã nằm liệt giường trong suốt cuộc đời mình, và sở thích duy nhất của tôi là giải toán và đọc tiểu thuyết.\n\n‘Wow, đây chắc chắn là nhập hồn rồi.’\n\nThành thật mà nói, tin rằng đây là một giấc mơ thì có vẻ hợp lý hơn, nhưng vì tôi thích ý tưởng nhập hồn hơn, nên tôi quyết định nghĩ theo hướng đó.\n\n“Òa òa!”\n\nDù đang khóc, tôi vẫn cảm thấy vui.\n\nTôi không nói dối đâu; tôi thực sự rất hài lòng với việc nhập hồn này.\n\n‘Nơi này tốt hơn Hàn Quốc nhiều.’\n\nỞ Hàn Quốc, tôi là một đứa trẻ mồ côi.\n\nCha ruột của tôi bỏ trốn trước khi tôi được sinh ra, và mẹ tôi cũng bỏ rơi tôi không lâu sau đó.\n\nTôi không biết mặt mũi của họ trông như thế nào.\n\nLên 4 tuổi, tôi được chẩn đoán mắc bệnh ung thư ở trẻ em và bắt đầu cuộc chiến với căn bệnh này.\n\nTôi thường được giới thiệu trên các phương tiện truyền thông như một đứa trẻ bất hạnh.\n\nNhờ sự hỗ trợ của nhiều người xa lạ, tôi đã có thể ở lại bệnh viện và kiên trì đến tận bây giờ.\n\nMay mắn thay, tôi có năng khiếu trong việc học tập.\n\n[Một kỳ tích đạt được từ giường bệnh!]\n\n[Đứa trẻ kỳ diệu được nhận vào Đại học Hàn Quốc.]\n\nViệc tôi được nhận vào trường đại học thậm chí còn được phát sóng trên bản tin.\n\nNhiều người đã chúc mừng và ca ngợi tôi.\n\nTôi rất biết ơn, nhưng thực sự, tôi không cảm thấy hạnh phúc lắm.\n\n‘Dù sao thì mình cũng sắp chết rồi.’\n\nTôi chắc chắn về cái chết sắp tới của mình.\n\nTrong khi đó, mọi thứ đều quá đau đớn và khó khăn.\n\nTôi thường mong muốn mình có thể chết nhanh để được giải thoát.\n\n‘Wow, mọi người, cơ thể tui không hề đau chút nào luôn!’\n\nDù tôi đang khóc to, nhưng tôi không cảm thấy đau đớn gì cả.\n\nLẽ ra tôi phải cảm nhận được cơn đau đè nén trong lồng ngực.\n\nChỉ riêng điều đó thôi cũng khiến tôi cảm thấy rất vui.\n\n‘Nếu mình xuyên vào Isabel, thì mình sẽ chết ở tuổi 21 à?’\n\nIsabel sinh ra đã mắc bệnh nan y.\n\nCô ấy có “Dấu ấn Narvidal”, một chi tiết trong tiểu thuyết.\n\nDấu ấn Narvidal là một biểu tượng hình chiếc đồng hồ cát được in hằn trên cổ tay của cô.\n\nTrong suốt cuộc đời, những hạt cát nhỏ sẽ liên tục rơi xuống, và khi cát cạn kiệt, cô sẽ chết.\n\nĐó là một lời nguyền mà cô ấy mang từ khi sinh ra.\n\nNhưng dù sao đi nữa, tôi không cảm thấy đau đớn gì ngay lúc này.\n\nÍt nhất là cho đến khi tôi 21 tuổi, tôi có thể sống một cách khỏe mạnh và hạnh phúc.\n\nTôi đã có thêm 21 năm cuộc đời, trong khi lẽ ra tôi có thể chết bất cứ lúc nào.\n\n‘Thật là một món hời!’\n\nDù mắc bệnh nan y, tôi đã xuyên vào một Isabel rất khỏe mạnh và xinh xắn.\n\n‘Wow, vậy là bây giờ mình có thể thoải mái ăn bánh quy à?’\n\nCả đời tôi chỉ ăn thức ăn bệnh viện.\n\nTôi thậm chí chưa bao giờ được uống cola.\n\nCó lần tôi nhấp một ngụm nhỏ, và y tá đã mắng tôi rất dữ.\n\n‘Liệu ở thế giới này có cola không nhỉ?’\n\nMột cách vô tình, tôi đã trở nên nghiêm túc về vấn đề đồ ăn.\n\n‘Ở đây chắc không có tokbokki, đúng không ta?’\n\nĐó là món ăn Hàn Quốc, nên có lẽ không tồn tại ở đây.\n\nTôi biết công thức, nhưng trong hoàn cảnh này, sao tôi lại nghĩ đến tokbokki nhỉ?\n\n… Dù nghĩ vậy, dòng suy nghĩ vẫn không ngừng.\n\n‘Liệu mình có thể thử uống rượu trước khi chết không nhỉ?’\n\nChắc hẳn nó ngon lắm nên người ta mới nghiện đến vậy.\n\nNgười ta nói nó đắng, nhưng có lẽ đó chỉ là một lời nói dối để ngăn trẻ con uống mà thôi.\n\nTôi thực sự muốn thử một lần trước khi chết.\n\nKiểu như một thứ gì đó dành cho người lớn, nhâm nhi một ly rượu vang trong khi tận hưởng cảnh đêm tuyệt đẹp.\n\nNó chỉ là một ảo tưởng, nhưng nếu có một điều ước, thì đó sẽ là điều tôi muốn.\n\n“Òa òa!”\n\nDù tôi hét lớn, nhưng tất cả những gì phát ra từ miệng chỉ là “Òa òa!”\n\nMột giọng nói khác vang lên.\n\n“Một thứ vô dụng đã được sinh ra.”\n\nĐúng như trong tiểu thuyết.\n\n「“Một thứ vô dụng đã được sinh ra.”」\n\n「Anh nhìn cô bé mới chào đời bằng ánh mắt vô cảm. Không hề có một chút tình cảm cha con nào trong ánh nhìn ấy.」\n\nTôi đảo mắt để nhìn gương mặt vừa xuất hiện.\n\nVà theo bản năng, tôi bật khóc.\n\n“Òa òa (đẹp trai quá)!”\n\nThành thật mà nói, tôi thực sự rất bất ngờ.\n\nTôi chưa từng thấy ai đẹp trai đến thế trong đời.\n\nMô tả trong tiểu thuyết thật sự rất chính xác.\n\n「Mọi người đều không ngần ngại gọi anh ta là một vẻ đẹp hoàn hảo. Mặc dù bị gọi là con búp bê vô cảm, nhưng rất nhiều quý cô vẫn thầm thương trộm nhớ anh.」\n\nMái tóc đen ngắn, lông mày và đôi mắt sắc sảo.\n\nÁnh mắt của ông ấy vô cùng dữ dội.\n\nDù vậy, ông ấy vẫn đẹp đến mức tôi không thể rời mắt. Người đàn ông này chắc chắn là cha tôi, Ron.\n\n‘Hihi.’\n\nNgay khi nhìn thấy gương mặt đẹp đẽ ấy, tôi đã tự trách mình vì trí tưởng tượng quá nghèo nàn.\n\n‘Ông ấy đẹp trai hơn cả trong tưởng tượng của mình.’\n\nÔng ấy đẹp đến mức khiến tôi ngừng khóc, dù đang là một đứa trẻ sơ sinh.\n\n‘Wow, ánh mắt dữ dội, nhưng ngay cả thế cũng rất đẹp.’\n\nThái độ của ông ấy đối với tôi hoàn toàn tự nhiên trong thế giới này.\n\nRon rất yêu vợ mình nhưng chưa bao giờ xem con cái như những đứa trẻ đúng nghĩa.\n\nTôi không cảm thấy quá sợ hãi.\n\nTrong tiểu thuyết, Isabel - người mắc bệnh nan y - đã trưởng thành trở thành một ác nữ vĩ đại.\n\n‘Cô ấy gây ra mọi tội ác có thể tưởng tượng và chết tự nhiên ở tuổi 21.’\n\nHơn nữa, vào ngày tôi chết, gia đình hoàng tộc sắt máu cũng sụp đổ.\n\nNam chính - người mà tôi đã hành hạ không thương tiếc khi còn nhỏ - trở lại sau khi thức tỉnh và tiêu diệt gia tộc Bilotian.\n\nĐó là lý do cuốn sách có tên ‘Sau Cái Chết của Ác Nữ’.\n\n‘Dù sao, điều đó có nghĩa là dù tôi làm gì, gia đình hoàng tộc cũng sẽ không động đến tôi!’\n\nVì vậy, không cần phải sợ.\n\nCha tôi quay lưng lại.\n\nÔng ấy thậm chí không dành một ánh nhìn âu yếm nào cho tôi.\n\nĐiều đó có chút buồn, nhưng với tư cách là một độc giả đã đọc cuốn tiểu thuyết nhiều lần, tôi hiểu đây là một phản ứng hợp lý.\n\n‘Vậy, mình đoán bây giờ mình sẽ được chẩn đoán mắc bệnh nan y.’\n\nNgay lúc đó, bà đỡ nhận ra điều gì đó trên cổ tay tôi và lên tiếng.\n\n“Bệ hạ! Đây là Dấu ấn Narvidal.”\n\nNhững đứa trẻ sinh ra với dấu ấn này sẽ chết ở tuổi 21.\n\n‘Vậy giờ cha mình sẽ mất hứng thú và rời đi, đúng không?’\n\nMột câu trả lời lạnh lùng vang lên.\n\n“Ta không quan tâm.”\n\nRầm.\n\nTôi nghe thấy tiếng cửa đóng.\n\nTôi không cảm thấy tệ chút nào.\n\n‘21 năm.’\n\nTôi đã được tặng miễn phí 21 năm cuộc đời.\n\nTiếng khóc của mẹ tôi vẫn tiếp tục.\n\n“Con của mẹ…”\n\nMẹ sẽ xin lỗi tôi.\n\nMẹ sẽ nói rằng mẹ rất xin lỗi vì đã sinh ra tôi.\n\n“Mẹ xin lỗi vì đã sinh con ra.”\n\n“Òa òa!”\n\nKhông, thực sự tôi hoàn toàn ổn mà.\n\nTôi muốn nói vậy, nhưng không thể cất thành lời.\n\nTôi quyết định sẽ nói điều đó khi tôi có thể nói được.\n\n‘Dù mình không thể học kiếm pháp.’\n\nNhưng tôi thực sự rất thông minh.\n\nVà tôi biết rất rõ về tương lai. Tôi thậm chí biết những nhân vật mạnh mẽ nhất trong thế giới này.\n\n‘Thế giới này thậm chí có thứ gì đó giống tiền điện tử.’\n\nNó được gọi khác đi, nhưng có thứ gì đó giống như tiền xu ở đây.\n\nTrong khoảng mười năm nữa, giá trị của nó sẽ tăng lên hàng trăm ngàn lần.\n\nHơn nữa, tôi biết khá rõ về Narmore, người tạo ra loại tiền này, cũng như các phù thủy, kỹ sư ma thuật và doanh nhân đầy triển vọng trong tương lai.\n\nNếu nghĩ kỹ, có vẻ như tôi có khá nhiều cách để tránh khỏi lá cờ diệt vong.\n\n‘Wow, mình nghĩ mình có ít nhất mười cách để sống một cuộc đời trọn vẹn trong 21 năm.’\n\nU a, u a.\n\nTôi cố gắng di chuyển cơ thể.\n\n‘Đúng là một thế giới kỳ ảo.’\n\nMột đứa trẻ sơ sinh kỳ diệu làm sao lại có thể cử động cơ thể theo ý mình!\n\n… Nhưng khi nghĩ đến việc tôi xuyên đến và hiểu hết mọi chuyện, điều này cũng không có gì bất ngờ lắm.\n\nNếu có lý do, có lẽ là vì tôi được sinh ra với thân thể thuộc Hoàng gia Bilotian.\n\nDù sao đi nữa, tôi cố gắng cử động chăm chỉ.\n\nBà đỡ nhận ra nỗ lực hết mình của tôi.\n\n“Có vẻ như điện hạ muốn đến chỗ Hoàng hậu bệ hạ.”\n\nBà đỡ bế tôi lên.\n\nCảm giác được nâng lên thật thú vị.\n\n‘Mọi thứ đều có vẻ thú vị trong cơ thể một đứa trẻ sơ sinh.’\n\nTôi được đặt bên cạnh mẹ tôi, Serna.\n\nU oa, u oa.\n\nTôi ngọ nguậy như một con sâu bướm vào vòng tay của mẹ.\n\nĐó là lần đầu tiên tôi cảm nhận được hơi ấm từ mẹ.\n\nCơ thể của Serna run lên.\n\nMẹ đang rơi nước mắt, nhưng đó là những giọt nước mắt hạnh phúc.\n\n‘Thật ấm áp, và nó khiến mình buồn ngủ quá.’\n\nCơ thể của một đứa trẻ sơ sinh cần rất nhiều giấc ngủ. Cuối cùng, tôi chìm vào giấc ngủ lúc nào không hay.\n\nTay vẫn nắm chặt lấy ngón tay của mẹ.\n\nVà một năm lại trôi qua.",drive:false},{n:2,t:"Chương 2",body:"",drive:true}]},
+{id:5,title:"Xúc Cảm Tội Ác",author:"Nguyên Thủy Lọ Tôn",author_id:1,genre:"Trinh Thám",views:729475,monthly:729475,exclusive:false,potential:false,status:"published",drive_file_id:"1ZW-7dX_ePdJkDYF3iuxzDySIzZvyVl3v",chapters:[{n:1,t:"Chương 1 Khoái cảm",body:"ngầy hôm đó hihihi vãi vat longe ueyieur fiufioweu rieufiefaiufiwyf êuhferf\n[img:local:C:\\Users\\Admin\\Desktop\\web HIMETO CHAN\\story_media\\story_5\\ed835821efaa.jpg]\nsh duefiu cuehfu eu\n",drive:false}]}
+];
+
+const DEMO_GENRES = ["Trinh Thám","Biến Bách","Biến Đơn","Biến Gả","Khoa Huyễn","Kinh Dị","Huyền Huyễn"];
+
+const LS = {
+  get(k, def) {
+    try { const v = localStorage.getItem("himeto_"+k); return v ? JSON.parse(v) : def; }
+    catch { return def; }
+  },
+  set(k, v) { localStorage.setItem("himeto_"+k, JSON.stringify(v)); }
+};
+
+function seedIfNeeded() {
+  const SEED_VER = "v4-reader";
+  if (LS.get("seeded") !== SEED_VER) {
+    LS.set("users", [
+      { id:1, email:"minhcagm30@gmail.com", display_name:"Nguyên Thủy Lọ Tôn", rank:"O", password:"729467", active:true, bio:"Đệ nhất lọ tôn" },
+      { id:2, email:"acphu3813@gmail.com", display_name:"Lọ Thánh Chí Tôn", rank:"A", password:"729467", active:true, bio:"" },
+    ]);
+    LS.set("keys", [
+      { id:1, plain:"EMAF-4TJK-XX5R-RWE4", note:"admin", used_by:"minhcagm30@gmail.com", revoked:false },
+      { id:3, plain:"EMAF-9IAJ-D3R2-68QR", note:"Key mở", used_by:null, revoked:false },
+    ]);
+    LS.set("stories", DEMO_STORIES);
+    LS.set("forum", [
+      { id:1, user:"Nguyên Thủy Lọ Tôn", title:"Chào mọi người", body:"Rất vui được tham gia HIMETO CHAN!", at:Date.now()-86400000 },
+    ]);
+    LS.set("config", {
+      theme:"dark",
+      exclusive_ids:[1],
+      potential_ids:[3],
+      featured_ids:[3,4,1],
+      collections:[{ name:"Đệ nhất lọ vương", desc:"", story_ids:[2] }],
+      welcome_enabled:true,
+      welcome_message:"Chào mừng! Web chỉ để đọc — viết truyện dùng app HIMETO CHAN.",
+      ui: { ...DEFAULT_UI },
+    });
+    LS.set("seeded", SEED_VER);
+  }
+}
+
+let state = { user: null, page: "login", theme: "dark" };
+
+function getConfig() { return LS.get("config", { theme:"dark", ui:DEFAULT_UI }); }
+function saveConfig(c) { LS.set("config", c); }
+function ui(key) {
+  const c = getConfig();
+  return (c.ui && c.ui[key]) || DEFAULT_UI[key] || key;
+}
+function getUserRank(u) {
+  if (!u || !u.id) return "E";
+  return (u.rank || "D").toUpperCase().replace("O₂","O2");
+}
+function rankAtLeast(u, min) {
+  return (RANK_ORDER[getUserRank(u)]||0) >= (RANK_ORDER[min]||0);
+}
+function canForum(u) { return u && u.id && rankAtLeast(u,"D"); }
+function canChat(u) { return u && u.id && rankAtLeast(u,"D"); }
+function formatViews(n) {
+  n = +n||0;
+  if (n<1000) return String(n);
+  if (n<10000) return (n/1000).toFixed(1).replace(/\.0$/,"")+"k";
+  if (n<1e6) return Math.floor(n/1000)+"k";
+  return (n/1e6).toFixed(1).replace(/\.0$/,"")+"m";
+}
+
+/* ===== Drive helpers (cùng logic extract ID như app) ===== */
+function extractDriveFileId(urlOrId) {
+  const s = String(urlOrId||"").trim();
+  if (!s) return "";
+  let m = s.match(/\/file\/d\/([a-zA-Z0-9_-]+)/);
+  if (m) return m[1];
+  m = s.match(/[?&]id=([a-zA-Z0-9_-]+)/);
+  if (m) return m[1];
+  m = s.match(/\/d\/([a-zA-Z0-9_-]+)/);
+  if (m) return m[1];
+  if (/^[a-zA-Z0-9_-]{20,}$/.test(s)) return s;
+  return "";
+}
+function driveViewUrl(fidOrUrl) {
+  const fid = extractDriveFileId(fidOrUrl);
+  if (!fid) return String(fidOrUrl||"");
+  return "https://drive.google.com/file/d/"+fid+"/view";
+}
+function driveDownloadUrl(fidOrUrl) {
+  const fid = extractDriveFileId(fidOrUrl);
+  if (!fid) return "";
+  return "https://drive.google.com/uc?export=download&id="+fid;
+}
+function drivePreviewUrl(fidOrUrl) {
+  const fid = extractDriveFileId(fidOrUrl);
+  if (!fid) return "";
+  return "https://drive.google.com/file/d/"+fid+"/preview";
+}
+/** Thử tải text public (thường bị CORS trên web — fallback mở tab). */
+async function tryFetchDriveText(fidOrUrl) {
+  const fid = extractDriveFileId(fidOrUrl);
+  if (!fid) throw new Error("Không tìm thấy File ID trong link Drive.");
+  const urls = [
+    "https://drive.usercontent.google.com/download?id="+fid+"&export=download&confirm=t",
+    "https://drive.google.com/uc?export=download&id="+fid,
+  ];
+  let lastErr = null;
+  for (const url of urls) {
+    try {
+      const resp = await fetch(url, { mode: "cors", credentials: "omit" });
+      if (!resp.ok) { lastErr = new Error("HTTP "+resp.status); continue; }
+      const buf = await resp.arrayBuffer();
+      const head = new TextDecoder("utf-8", {fatal:false}).decode(buf.slice(0, 200)).toLowerCase();
+      if (head.includes("<!doctype") || head.includes("<html")) {
+        lastErr = new Error("Drive trả HTML (cần mở link public).");
+        continue;
+      }
+      return new TextDecoder("utf-8", {fatal:false}).decode(buf);
+    } catch (e) {
+      lastErr = e;
+    }
+  }
+  throw lastErr || new Error("Không tải được (CORS). Dùng «Mở trên Drive».");
+}
+const CHAPTER_HEADER_RE = /(?:^|\n)(?:#{1,3}\s*)?(?:Chương|CHƯƠNG|Chuong|Chapter|CHAPTER|Phần|PHẦN)\s*(\d+)(?:\s*[:.\-–—]\s*|\s+)([^\n]{0,120})?/gi;
+function parseChaptersFromText(text) {
+  text = String(text||"").replace(/\r\n/g,"\n").replace(/\r/g,"\n");
+  if (!text.trim()) return [];
+  const matches = [];
+  let m;
+  const re = new RegExp(CHAPTER_HEADER_RE.source, "gi");
+  while ((m = re.exec(text)) !== null) {
+    matches.push({ index: m.index, num: +m[1], sub: (m[2]||"").trim(), endHeader: m.index + m[0].length });
+  }
+  const chapters = [];
+  if (matches.length) {
+    const pre = text.slice(0, matches[0].index).trim();
+    if (pre.length > 80) chapters.push({ n: 0, t: "Mở đầu", body: pre });
+    for (let i = 0; i < matches.length; i++) {
+      const cur = matches[i];
+      const end = i + 1 < matches.length ? matches[i+1].index : text.length;
+      const body = text.slice(cur.endHeader, end).trim();
+      const title = "Chương " + cur.num + (cur.sub ? ": " + cur.sub : "");
+      chapters.push({ n: cur.num, t: title, body });
+    }
+  } else {
+    chapters.push({ n: 1, t: "Chương 1", body: text.trim() });
+  }
+  return chapters.filter(c => (c.body||"").trim()).map((c,i) => ({ ...c, n: c.n || (i+1) }));
+}
+
+function findUserByEmail(email) {
+  email = (email||"").trim().toLowerCase();
+  return (LS.get("users",[])).find(u => u.email === email);
+}
+function login(email, password) {
+  const u = findUserByEmail(email);
+  if (!u) return { ok:false, msg:"Chưa có tài khoản. Kích hoạt Key trên app hoặc dùng tài khoản đã seed." };
+  if (!u.active) return { ok:false, msg: u.lock_message || "Tài khoản đang bị khóa." };
+  if (u.password !== password) return { ok:false, msg:"Sai mật khẩu." };
+  return { ok:true, user:{ ...u } };
+}
+function activateKey(email, key, displayName, password) {
+  email = (email||"").trim().toLowerCase();
+  key = (key||"").trim();
+  if (!email.includes("@")) return { ok:false, msg:"Email không hợp lệ." };
+  if (!key) return { ok:false, msg:"Nhập key." };
+  if ((password||"").length < 6) return { ok:false, msg:"Mật khẩu tối thiểu 6 ký tự." };
+  const keys = LS.get("keys",[]);
+  const k = keys.find(x => x.plain === key && !x.revoked);
+  if (!k) return { ok:false, msg:"Key không đúng hoặc đã thu hồi." };
+  if (k.used_by && k.used_by !== email) return { ok:false, msg:"Key đã gắn email khác." };
+  let users = LS.get("users",[]);
+  let u = users.find(x => x.email === email);
+  if (!u) {
+    u = { id: users.length ? Math.max(...users.map(x=>x.id))+1 : 1, email, display_name: displayName || email.split("@")[0], rank: "D", password, active:true, bio:"" };
+    users.push(u);
+  } else {
+    u.password = password;
+    if (displayName) u.display_name = displayName;
+  }
+  k.used_by = email;
+  LS.set("users", users);
+  LS.set("keys", keys);
+  return { ok:true, user:{ ...u }, msg:"Kích hoạt thành công." };
+}
+
+function applyTheme(name) {
+  state.theme = name;
+  document.body.setAttribute("data-theme", name);
+  const btn = document.getElementById("btn-theme");
+  if (btn) btn.textContent = name === "dark" ? "☀️ Sáng" : "🌙 Tối";
+  const c = getConfig(); c.theme = name; saveConfig(c);
+}
+
+function updateHeaderChip() {
+  const who = document.getElementById("who");
+  const badge = document.getElementById("rank-badge");
+  if (!state.user) {
+    who.textContent = "Khách";
+    badge.textContent = "E";
+    badge.className = "rank-badge E";
+    return;
+  }
+  let dn = state.user.display_name || state.user.email || "";
+  if (dn.includes("@")) dn = dn.split("@")[0];
+  who.textContent = dn;
+  const r = getUserRank(state.user);
+  badge.textContent = r === "O2" ? "O₂" : r;
+  badge.className = "rank-badge " + r;
+}
+
+function buildNav() {
+  const nav = document.getElementById("nav");
+  nav.innerHTML = "";
+  const order = ui("nav_order") || DEFAULT_UI.nav_order;
+  const labels = {
+    home: ui("nav_home"), search: ui("nav_search"), collections: ui("nav_collections"),
+    genres: ui("nav_genres"), forum: ui("nav_forum"), chat: ui("nav_chat"),
+    account: ui("nav_account"),
+  };
+  order.forEach(k => {
+    if (!labels[k]) return;
+    if (k === "forum" && state.user && !canForum(state.user) && !state.user.id) return;
+    if (k === "chat" && (!state.user || !canChat(state.user))) return;
+    if ((k === "forum" || k === "chat") && !state.user) return;
+    const b = document.createElement("button");
+    b.className = "nav-btn" + (state.page === k ? " active" : "");
+    b.textContent = labels[k];
+    b.onclick = () => goto(k);
+    nav.appendChild(b);
+  });
+}
+
+function goto(page) {
+  state.page = page;
+  buildNav();
+  renderPage();
+}
+
+function renderPage() {
+  const el = document.getElementById("app");
+  if (state.page === "login") return renderLogin(el);
+  if (!state.user && !["home","search","collections","genres"].includes(state.page)) {
+    state.page = "login";
+    return renderLogin(el);
+  }
+  if (state.page === "home") return renderHome(el);
+  if (state.page === "search") return renderSearch(el);
+  if (state.page === "collections") return renderCollections(el);
+  if (state.page === "genres") return renderGenres(el);
+  if (state.page === "forum") return renderForum(el);
+  if (state.page === "chat") return renderChat(el);
+  if (state.page === "account") return renderAccount(el);
+  renderHome(el);
+}
+
+function esc(s) {
+  return String(s??"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;");
+}
+function timeAgo(ts) {
+  const d = Math.floor((Date.now()-ts)/1000);
+  if (d<60) return "vừa xong";
+  if (d<3600) return Math.floor(d/60)+" phút trước";
+  if (d<86400) return Math.floor(d/3600)+" giờ trước";
+  return Math.floor(d/86400)+" ngày trước";
+}
+
+function storyCard(s) {
+  const hasDrive = !!(s.drive_file_id);
+  return `<div class="card" data-sid="${s.id}">
+    <div class="card-cover">📚
+      ${s.exclusive?'<span class="badge-ex">★ Độc quyền</span>':''}
+      ${hasDrive?'<span class="badge-drive">Drive</span>':''}
+    </div>
+    <div class="card-body">
+      <div class="card-title">${esc(s.title)}</div>
+      <div class="card-meta">${esc(s.author||"")} · ${formatViews(s.views)} views</div>
+    </div>
+  </div>`;
+}
+function bindStoryCards(root) {
+  if (!root) return;
+  root.querySelectorAll("[data-sid]").forEach(c => {
+    c.onclick = () => openStory(+c.dataset.sid);
+  });
+}
+
+function renderLogin(el) {
+  el.innerHTML = `
+    <div class="form-card">
+      <h2>Đăng nhập</h2>
+      <p class="sub">Web chỉ đọc · Viết truyện dùng app</p>
+      <div class="tabs">
+        <div class="tab active" data-tab="in">Đăng nhập</div>
+        <div class="tab" data-tab="key">Kích hoạt Key</div>
+      </div>
+      <div id="tab-in">
+        <div class="field"><label>Email</label><input id="login-email" type="email" placeholder="you@gmail.com" /></div>
+        <div class="field"><label>Mật khẩu</label><input id="login-pass" type="password" /></div>
+        <button class="btn btn-primary" id="btn-login" style="width:100%">Đăng nhập</button>
+      </div>
+      <div id="tab-key" class="hidden">
+        <div class="field"><label>Email</label><input id="key-email" type="email" /></div>
+        <div class="field"><label>Invite Key</label><input id="key-plain" placeholder="EMAF-...." /></div>
+        <div class="field"><label>Tên hiển thị</label><input id="key-name" /></div>
+        <div class="field"><label>Đặt mật khẩu</label><input id="key-pass" type="password" /></div>
+        <button class="btn btn-primary" id="btn-key" style="width:100%">Kích hoạt</button>
+      </div>
+      <p class="msg" id="login-msg"></p>
+      <p class="tip" style="text-align:center;margin-top:12px">Hoặc <a href="#" id="as-guest">vào xem như khách</a></p>
+    </div>`;
+  el.querySelectorAll(".tab").forEach(t => {
+    t.onclick = () => {
+      el.querySelectorAll(".tab").forEach(x => x.classList.remove("active"));
+      t.classList.add("active");
+      el.querySelector("#tab-in").classList.toggle("hidden", t.dataset.tab !== "in");
+      el.querySelector("#tab-key").classList.toggle("hidden", t.dataset.tab !== "key");
+    };
+  });
+  el.querySelector("#btn-login").onclick = () => {
+    const r = login(el.querySelector("#login-email").value, el.querySelector("#login-pass").value);
+    const msg = el.querySelector("#login-msg");
+    if (!r.ok) { msg.className = "msg err"; msg.textContent = r.msg; return; }
+    enterApp(r.user);
+  };
+  el.querySelector("#btn-key").onclick = () => {
+    const r = activateKey(
+      el.querySelector("#key-email").value,
+      el.querySelector("#key-plain").value,
+      el.querySelector("#key-name").value,
+      el.querySelector("#key-pass").value
+    );
+    const msg = el.querySelector("#login-msg");
+    if (!r.ok) { msg.className = "msg err"; msg.textContent = r.msg; return; }
+    msg.className = "msg ok"; msg.textContent = r.msg;
+    enterApp(r.user);
+  };
+  el.querySelector("#as-guest").onclick = (e) => {
+    e.preventDefault();
+    state.user = null;
+    document.getElementById("splash").classList.add("hidden");
+    document.getElementById("main").classList.remove("hidden");
+    updateHeaderChip();
+    applyTheme(getConfig().theme || "dark");
+    goto("home");
+  };
+}
+
+function renderHome(el) {
+  const stories = LS.get("stories", DEMO_STORIES).filter(s => s.status === "published");
+  const cfg = getConfig();
+  const byViews = [...stories].sort((a,b)=>(b.views||0)-(a.views||0)).slice(0,12);
+  const byMonth = [...stories].sort((a,b)=>(b.monthly||0)-(a.monthly||0)).slice(0,12);
+  const excl = stories.filter(s => s.exclusive || (cfg.exclusive_ids||[]).includes(s.id));
+  const pot = stories.filter(s => s.potential || (cfg.potential_ids||[]).includes(s.id));
+  const featIds = cfg.featured_ids || [];
+  const feat = featIds.map(id => stories.find(s => s.id === id)).filter(Boolean);
+  el.innerHTML = `
+    <div class="page">
+      <div class="hero">
+        <div class="hero-badge">${esc(ui("hero_badge"))}</div>
+        <h1>${esc(ui("hero_title"))}</h1>
+        <p>${esc(ui("hero_sub"))}</p>
+        <button class="btn btn-primary" id="btn-explore">${esc(ui("hero_btn_explore"))}</button>
+      </div>
+      <div class="section"><div class="section-title">${esc(ui("sec_top_views"))}</div>
+        <div class="cards">${byViews.map(storyCard).join("")||`<div class="empty">${esc(ui("empty_section"))}</div>`}</div></div>
+      <div class="section"><div class="section-title">${esc(ui("sec_monthly"))}</div>
+        <div class="cards">${byMonth.map(storyCard).join("")||`<div class="empty">${esc(ui("empty_section"))}</div>`}</div></div>
+      <div class="section"><div class="section-title">${esc(ui("sec_exclusive"))}</div>
+        <div class="cards">${excl.map(storyCard).join("")||`<div class="empty">${esc(ui("empty_section"))}</div>`}</div></div>
+      <div class="section"><div class="section-title">${esc(ui("sec_potential"))}</div>
+        <div class="cards">${pot.map(storyCard).join("")||`<div class="empty">${esc(ui("empty_section"))}</div>`}</div></div>
+      <div class="section"><div class="section-title">${esc(ui("sec_featured"))}</div>
+        <div class="cards">${feat.map(storyCard).join("")||`<div class="empty">${esc(ui("empty_section"))}</div>`}</div></div>
+    </div>`;
+  el.querySelector("#btn-explore").onclick = () => goto("search");
+  bindStoryCards(el);
+}
+
+function renderSearch(el) {
+  el.innerHTML = `
+    <div class="page">
+      <h2>${esc(ui("search_title")||"Tìm kiếm")}</h2>
+      <p class="tip" style="margin-bottom:12px">${esc(ui("search_sub")||"")}</p>
+      <div class="search-bar">
+        <input id="q" placeholder="Tên truyện, tác giả…" />
+        <button class="btn btn-primary" id="btn-q">Tìm</button>
+      </div>
+      <div class="cards" id="res"></div>
+    </div>`;
+  const run = () => {
+    const q = (el.querySelector("#q").value||"").trim().toLowerCase();
+    let list = LS.get("stories", DEMO_STORIES).filter(s => s.status==="published");
+    if (q) list = list.filter(s => (s.title||"").toLowerCase().includes(q) || (s.author||"").toLowerCase().includes(q) || (s.genre||"").toLowerCase().includes(q));
+    el.querySelector("#res").innerHTML = list.map(storyCard).join("") || `<div class="empty">Không thấy</div>`;
+    bindStoryCards(el.querySelector("#res"));
+  };
+  el.querySelector("#btn-q").onclick = run;
+  el.querySelector("#q").onkeydown = e => { if (e.key==="Enter") run(); };
+  run();
+}
+
+function renderCollections(el) {
+  const cfg = getConfig();
+  const stories = LS.get("stories", DEMO_STORIES);
+  const cols = cfg.collections || [];
+  el.innerHTML = `
+    <div class="page">
+      <h2>${esc(ui("coll_title")||"Bộ sưu tập")}</h2>
+      <p class="tip" style="margin-bottom:16px">${esc(ui("coll_sub")||"")}</p>
+      ${cols.length ? cols.map(c => {
+        const ss = (c.story_ids||[]).map(id => stories.find(s => s.id===id)).filter(Boolean);
+        return `<div class="section"><div class="section-title">${esc(c.name)}</div>
+          <div class="cards">${ss.map(storyCard).join("")||`<div class="empty">Trống</div>`}</div></div>`;
+      }).join("") : `<div class="empty">Chưa có bộ sưu tập</div>`}
+    </div>`;
+  bindStoryCards(el);
+}
+
+function renderGenres(el) {
+  const stories = LS.get("stories", DEMO_STORIES).filter(s=>s.status==="published");
+  el.innerHTML = `
+    <div class="page">
+      <h2>${esc(ui("genres_title")||"Thể loại")}</h2>
+      <p class="tip" style="margin-bottom:12px">${esc(ui("genres_tip")||"")}</p>
+      <div class="toolbar" id="glist">${DEMO_GENRES.map(g => `<button class="btn genre-btn" data-g="${esc(g)}">${esc(g)}</button>`).join("")}</div>
+      <div class="cards" id="gres"></div>
+    </div>`;
+  const show = (g) => {
+    const list = g ? stories.filter(s => s.genre === g) : stories;
+    el.querySelector("#gres").innerHTML = list.map(storyCard).join("") || `<div class="empty">${esc(ui("genres_empty")||"Trống")}</div>`;
+    bindStoryCards(el.querySelector("#gres"));
+  };
+  el.querySelectorAll(".genre-btn").forEach(b => b.onclick = () => show(b.dataset.g));
+  show(null);
+}
+
+function renderForum(el) {
+  if (!state.user) { goto("login"); return; }
+  const posts = LS.get("forum", []);
+  el.innerHTML = `
+    <div class="page">
+      <h2>${esc(ui("forum_title")||"Diễn đàn")}</h2>
+      <p class="tip">${esc(ui("forum_tip")||"Thread chữ.")}</p>
+      ${canForum(state.user) ? `
+      <div class="form-card" style="max-width:100%;margin:16px 0">
+        <div class="field"><label>Tiêu đề</label><input id="f-title" /></div>
+        <div class="field"><label>Nội dung</label><textarea id="f-body"></textarea></div>
+        <button class="btn btn-primary" id="btn-fpost">${esc(ui("forum_post_btn")||"Đăng bài")}</button>
+      </div>` : `<div class="empty">Cần cấp D+ để đăng</div>`}
+      <div id="flist">${posts.map(p => `
+        <div class="post">
+          <div class="author">${esc(p.user)}</div>
+          <div style="font-weight:600;margin:4px 0">${esc(p.title)}</div>
+          <div>${esc(p.body)}</div>
+          <div class="time">${timeAgo(p.at)}</div>
+        </div>`).join("") || `<div class="empty">Chưa có bài</div>`}</div>
+    </div>`;
+  const btn = el.querySelector("#btn-fpost");
+  if (btn) btn.onclick = () => {
+    const title = el.querySelector("#f-title").value.trim();
+    const body = el.querySelector("#f-body").value.trim();
+    if (!body) return alert("Nhập nội dung");
+    const posts = LS.get("forum", []);
+    posts.unshift({ id: Date.now(), user: state.user.display_name||state.user.email, title, body, at: Date.now() });
+    LS.set("forum", posts);
+    renderForum(document.getElementById("app"));
+  };
+}
+
+function renderChat(el) {
+  if (!state.user || !canChat(state.user)) {
+    el.innerHTML = `<div class="page"><div class="empty">Cần đăng nhập cấp D+</div></div>`;
+    return;
+  }
+  const peers = LS.get("users",[]).filter(u => u.id !== state.user.id);
+  const peerId = state._chatPeer || (peers[0] && peers[0].id);
+  state._chatPeer = peerId;
+  const key = "pm_"+[state.user.id, peerId].sort().join("_");
+  const msgs = LS.get(key, []);
+  el.innerHTML = `
+    <div class="page">
+      <h2>${esc(ui("chat_title")||"Chat")}</h2>
+      <div class="toolbar">
+        <select id="peer">${peers.map(p => `<option value="${p.id}" ${p.id===peerId?"selected":""}>${esc(p.display_name||p.email)}</option>`).join("")||"<option value=''>—</option>"}</select>
+      </div>
+      <div class="chat-box" id="cbox">${msgs.map(m => `
+        <div class="msg-bubble ${m.from===state.user.id?"me":"them"}">
+          <div>${esc(m.body)}</div>
+          <div class="time">${timeAgo(m.at)}</div>
+        </div>`).join("") || `<div class="empty">Chưa có tin</div>`}</div>
+      <div class="toolbar">
+        <input id="c-in" style="flex:1;padding:10px;border-radius:10px;border:1px solid var(--border);background:var(--input-bg)" placeholder="${esc(ui("chat_placeholder")||"Nhập tin…")}" />
+        <button class="btn btn-primary" id="btn-csend">${esc(ui("chat_send")||"Gửi")}</button>
+      </div>
+    </div>`;
+  el.querySelector("#peer").onchange = () => {
+    state._chatPeer = +el.querySelector("#peer").value;
+    renderChat(document.getElementById("app"));
+  };
+  el.querySelector("#btn-csend").onclick = () => {
+    const body = el.querySelector("#c-in").value.trim();
+    const to = state._chatPeer;
+    if (!body || !to) return;
+    const key = "pm_"+[state.user.id, to].sort().join("_");
+    const list = LS.get(key, []);
+    list.push({ from: state.user.id, to, body, at: Date.now() });
+    LS.set(key, list);
+    renderChat(document.getElementById("app"));
+  };
+}
+
+function renderAccount(el) {
+  if (!state.user) { goto("login"); return; }
+  const u = state.user;
+  el.innerHTML = `
+    <div class="page">
+      <div class="form-card" style="max-width:480px">
+        <div style="text-align:center;margin-bottom:12px">
+          <div class="av" style="width:64px;height:64px;margin:0 auto 8px;font-size:28px">👤</div>
+          <h2>${esc(u.display_name||u.email)}</h2>
+          <span class="rank-badge ${getUserRank(u)}">${getUserRank(u)==="O2"?"O₂":getUserRank(u)}</span>
+        </div>
+        <div class="field"><label>Email</label><input value="${esc(u.email)}" disabled /></div>
+        <div class="field"><label>Tên hiển thị</label><input id="acc-name" value="${esc(u.display_name||"")}" /></div>
+        <div class="field"><label>Tiểu sử</label><textarea id="acc-bio">${esc(u.bio||"")}</textarea></div>
+        <div class="toolbar">
+          <button class="btn btn-primary" id="btn-save-acc">Lưu</button>
+          <button class="btn btn-danger" id="btn-logout">Đăng xuất</button>
+        </div>
+        <p class="tip" style="margin-top:12px">Viết / đăng truyện / xuất ebook: dùng <b>app HIMETO CHAN</b> (EXE).</p>
+      </div>
+    </div>`;
+  el.querySelector("#btn-save-acc").onclick = () => {
+    const users = LS.get("users",[]);
+    const idx = users.findIndex(x => x.id === u.id);
+    if (idx>=0) {
+      users[idx].display_name = el.querySelector("#acc-name").value.trim() || users[idx].display_name;
+      users[idx].bio = el.querySelector("#acc-bio").value;
+      LS.set("users", users);
+      state.user = { ...users[idx] };
+      updateHeaderChip();
+      alert("Đã lưu.");
+    }
+  };
+  el.querySelector("#btn-logout").onclick = () => {
+    state.user = null;
+    state.page = "login";
+    updateHeaderChip();
+    buildNav();
+    renderPage();
+  };
+}
+
+function openStory(sid) {
+  const stories = LS.get("stories", DEMO_STORIES);
+  const s = stories.find(x => x.id === sid);
+  if (!s) return;
+  s.views = (s.views||0) + 1;
+  LS.set("stories", stories);
+  const bg = document.getElementById("modal-bg");
+  const body = document.getElementById("modal-body");
+  const fid = s.drive_file_id || "";
+  body.innerHTML = `
+    <div style="display:flex;justify-content:space-between;align-items:start;gap:12px">
+      <div>
+        <h2>${esc(s.title)}</h2>
+        <div class="meta">${esc(s.author||"")} · ${esc(s.genre||"")} · ${formatViews(s.views)} views
+          ${s.exclusive?" · ★ Độc quyền":""}
+          ${fid?" · ☁ Drive":""}</div>
+      </div>
+      <button class="btn" id="modal-close">Đóng</button>
+    </div>
+    <div class="toolbar">
+      <button class="btn" id="btn-like">♥ Like</button>
+      ${fid ? `<a class="btn btn-primary" href="${esc(driveViewUrl(fid))}" target="_blank" rel="noopener">☁ Mở file Drive</a>` : ""}
+      ${fid ? `<button class="btn" id="btn-try-drive">Thử tải mục lục từ Drive</button>` : ""}
+    </div>
+    <h3 style="font-size:14px;margin:12px 0 8px">Danh sách chương</h3>
+    <ul class="chapter-list" id="ch-list">
+      ${(s.chapters||[]).map(c => {
+        const needDrive = c.drive || (!(c.body||"").trim() && fid);
+        return `<li data-ch="${c.n}" data-drive="${needDrive?1:0}">
+          <span>Ch. ${c.n}: ${esc(c.t||"")}</span>
+          <span style="color:var(--muted);font-size:12px">${needDrive?"☁ Drive":"Đọc"}</span>
+        </li>`;
+      }).join("") || "<li>Chưa có chương</li>"}
+    </ul>
+    <div id="ch-content" class="reader-body" style="display:none"></div>
+    <p class="tip" id="ch-tip"></p>
+  `;
+  bg.classList.remove("hidden");
+  body.querySelector("#modal-close").onclick = () => bg.classList.add("hidden");
+  bg.onclick = (e) => { if (e.target === bg) bg.classList.add("hidden"); };
+
+  const box = body.querySelector("#ch-content");
+  const tip = body.querySelector("#ch-tip");
+
+  body.querySelectorAll("[data-ch]").forEach(li => {
+    li.onclick = async () => {
+      const ch = (s.chapters||[]).find(c => c.n === +li.dataset.ch);
+      box.style.display = "block";
+      if (ch && (ch.body||"").trim()) {
+        box.textContent = ch.body;
+        tip.textContent = "";
+        return;
+      }
+      if (fid) {
+        box.textContent = "Chương lưu trên Google Drive (public link).\n\nTrình duyệt thường bị CORS khi tải file Drive trực tiếp — hãy bấm «Mở file Drive» hoặc mở link bên dưới.";
+        tip.innerHTML = `<a href="${esc(driveViewUrl(fid))}" target="_blank" rel="noopener">Mở Drive · file ${esc(extractDriveFileId(fid))}</a>`;
+        return;
+      }
+      box.textContent = "(Chưa có nội dung chương — đăng / gắn Drive từ app)";
+      tip.textContent = "";
+    };
+  });
+
+  const tryBtn = body.querySelector("#btn-try-drive");
+  if (tryBtn) tryBtn.onclick = async () => {
+    tip.textContent = "Đang thử tải…";
+    box.style.display = "block";
+    try {
+      const text = await tryFetchDriveText(fid);
+      const parsed = parseChaptersFromText(text);
+      if (parsed.length) {
+        s.chapters = parsed.map(c => ({ n:c.n, t:c.t, body:c.body, drive:false }));
+        LS.set("stories", stories);
+        box.textContent = "Đã tải và tách "+parsed.length+" chương từ Drive (cache local trình duyệt). Chọn chương để đọc.";
+        tip.textContent = "";
+        // refresh list
+        openStory(sid);
+      } else {
+        box.textContent = text.slice(0, 8000);
+        tip.textContent = "Không tách được header chương — hiện raw text.";
+      }
+    } catch (e) {
+      box.textContent = "Không tải được trong trình duyệt.\n" + (e && e.message ? e.message : e);
+      tip.innerHTML = `Cách chắc chắn: <a href="${esc(driveViewUrl(fid))}" target="_blank" rel="noopener">mở link Drive public</a>. App desktop tải được vì không bị CORS.`;
+    }
+  };
+}
+
+function enterApp(user) {
+  state.user = user;
+  const cfg = getConfig();
+  if (cfg.welcome_enabled && cfg.welcome_message) {
+    const flag = "wel_"+user.id;
+    if (!LS.get(flag)) {
+      LS.set(flag, true);
+      setTimeout(() => alert("[Chào mừng]\n"+cfg.welcome_message), 400);
+    }
+  }
+  document.getElementById("splash").classList.add("hidden");
+  document.getElementById("main").classList.remove("hidden");
+  updateHeaderChip();
+  applyTheme(getConfig().theme || "dark");
+  goto("home");
+}
+
+seedIfNeeded();
+document.getElementById("btn-enter-splash").onclick = () => {
+  document.getElementById("splash").classList.add("hidden");
+  document.getElementById("main").classList.remove("hidden");
+  state.page = "login";
+  applyTheme(getConfig().theme || "dark");
+  updateHeaderChip();
+  document.getElementById("nav").innerHTML = "";
+  renderPage();
+};
+document.getElementById("btn-theme").onclick = () => {
+  applyTheme(state.theme === "dark" ? "light" : "dark");
+};
+document.getElementById("logo-btn").onclick = document.getElementById("brand-btn").onclick = () => {
+  if (state.user) goto("home");
+  else goto("home");
+};
+applyTheme(getConfig().theme || "dark");
+</script>
+</body>
+</html>
